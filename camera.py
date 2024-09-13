@@ -5,6 +5,7 @@ import os
 import cv2
 import numpy as np
 
+import emetions_summary
 import emotions_classifier
 
 def start_camera(model):
@@ -33,6 +34,7 @@ def start_camera(model):
                 # Return detected face
                 #save_image_to_folder(detected_face,"detected_faces", str(frame_num)+".png")
                 prediction = emotions_classifier.main(model,detected_face)
+                emetions_summary.main(prediction)
             frame_num+=1
 
             cv2.putText(frame, prediction,(x,y-10),cv2.FONT_HERSHEY_SIMPLEX,0.6,(0,255,0) ,2,cv2.LINE_AA)
@@ -51,6 +53,7 @@ def start_camera(model):
     # When everything is done, release the capture
     video_capture.release()
     cv2.destroyAllWindows()
+    emetions_summary.plot_summary()
 
 
 def save_image_to_folder(image, folder_name, image_name):
