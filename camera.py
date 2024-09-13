@@ -23,13 +23,13 @@ def start_camera(model):
 
         image_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        detections = face_detector.detectMultiScale(image_gray, minNeighbors=10)
+        detections = face_detector.detectMultiScale(image_gray, minNeighbors=10, minSize=(80, 80))
 
         # Draw a rectangle around the faces and return the face region
         for (x, y, w, h) in detections:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             detected_face = frame[y:y + h, x:x + w]
-            if frame_num % 5 ==0:
+            if frame_num % 10 ==0:
                 # Return detected face
                 #save_image_to_folder(detected_face,"detected_faces", str(frame_num)+".png")
                 prediction = emotions_classifier.main(model,detected_face)
