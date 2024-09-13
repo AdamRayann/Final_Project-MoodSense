@@ -1,7 +1,7 @@
 import camera
 
 def main():
-    camera.start_camera()
+    camera.main()
 
 if __name__ == "__main__":
     main()
