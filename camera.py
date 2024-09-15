@@ -1,5 +1,4 @@
 import cv2
-# camera.py
 import time
 import os
 import cv2
@@ -30,7 +29,7 @@ def start_camera(model):
         for (x, y, w, h) in detections:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             detected_face = frame[y:y + h, x:x + w]
-            if frame_num % 10 ==0:
+            if frame_num % 10 *len(detections) ==0:
                 # Return detected face
                 #save_image_to_folder(detected_face,"detected_faces", str(frame_num)+".png")
                 prediction = emotions_classifier.main(model,detected_face)
@@ -38,7 +37,7 @@ def start_camera(model):
             frame_num+=1
 
             cv2.putText(frame, prediction,(x,y-10),cv2.FONT_HERSHEY_SIMPLEX,0.6,(0,255,0) ,2,cv2.LINE_AA)
-            cv2.imshow('Detected Face', detected_face)
+            #cv2.imshow('Detected Face', detected_face)
 
         # Display the resulting frame
         cv2.imshow('Video', frame)
@@ -81,6 +80,5 @@ def save_image_to_folder(image, folder_name, image_name):
 # save_image_to_folder(image, 'saved_images', 'output_image.jpg')
 
 
-def main():
-    model=emotions_classifier.load_model()
+def main(model):
     start_camera(model)
