@@ -713,16 +713,51 @@ class GUI(tk.Tk):
             print(f"Error occurred while loading image: {e}")
 
     def create_emotion_history(self):
-        # History title
-        title = ttk.Label(self.history_frame, text="Emotion Detection History", font=('Helvetica', 24, 'bold'))
+        # Load background image for the emotion history frame
+        bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.main_bg_image = Image.open(bg_image_path)
+
+        # Create a label to hold the background image
+        self.bg_label = tk.Label(self.history_frame)
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the whole frame
+
+        # Bind the resize event to dynamically resize the background image using the shared function
+        self.history_frame.bind("<Configure>", lambda event: self.resize_background(self.history_frame, self.bg_label))
+
+        # Create a Canvas to simulate a rounded square frame (background)
+        rounded_square_frame = tk.Canvas(self.history_frame, width=820, height=620, bg='#FFFFFF', highlightthickness=0)
+        rounded_square_frame.pack(pady=50, padx=50)
+
+        # Draw a rounded rectangle as the background of the frame
+        create_rounded_rectangle(rounded_square_frame, 10, 10, 810, 610, radius=50, fill="#D8E4FE", outline="#E0E0E0")
+
+        # Create a frame inside the Canvas to hold the history content (in the rounded square)
+        content_frame = tk.Frame(rounded_square_frame, bg='#D8E4FE')
+        content_frame.place(x=20, y=20, width=780, height=530)  # Place it within the rounded square
+
+        # Title for Emotion Detection History
+        title = ttk.Label(content_frame, text="Emotion Detection History", font=('Helvetica', 24, 'bold'),
+                          background='#D8E4FE')
         title.pack(pady=20)
 
         # Add some mock history items (you can later populate this with real data)
-        history_label = ttk.Label(self.history_frame, text="No past detections yet...", font=('Helvetica', 16))
+        history_label = ttk.Label(content_frame, text="No past detections yet...", font=('Helvetica', 16),
+                                  background='#D8E4FE')
         history_label.pack(pady=10)
 
-        return_button = ttk.Button(self.history_frame, text="Return to Main Page", command=lambda: self.show_frame(self.main_frame))
+        # Create a custom rounded button for returning to the main page
+        return_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
+                                  highlightthickness=0)
         return_button.pack(side='bottom', pady=20)
+
+        # Draw a rounded rectangle for the Return button
+        create_rounded_rectangle(return_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
+
+        # Add button text for Return to Main Page
+        return_button.create_text(120, 30, text="Return to Main Page", fill="white", font=('Helvetica', 14, 'bold'))
+
+        # Bind the button click event for returning to the main page
+        return_button.bind("<Button-1>", lambda event: self.show_frame(self.main_frame))
 
     def ask_camera_permission(self):
         # Create a new small window (dialog box)
