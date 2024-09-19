@@ -7,6 +7,7 @@ import numpy as np
 import emetions_summary
 import emotions_classifier
 
+
 def start_camera(model):
     print("Camera has started.")
     face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
@@ -52,7 +53,7 @@ def start_camera(model):
     # When everything is done, release the capture
     video_capture.release()
     cv2.destroyAllWindows()
-    emetions_summary.plot_summary()
+    summary_path=emetions_summary.plot_summary()
 
 
 def save_image_to_folder(image, folder_name, image_name):

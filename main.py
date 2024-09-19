@@ -5,11 +5,12 @@ from tkinter import ttk, filedialog
 from PIL import Image, ImageTk
 import emotions_classifier
 import offline_classification
-import os
 import cv2
 from RoundButton import create_rounded_rectangle
 from tkinter import Canvas
 from PIL import Image, ImageTk, ImageDraw
+import os
+import glob
 
 model = emotions_classifier.load_model()
 
@@ -63,6 +64,7 @@ class GUI(tk.Tk):
         self.main_frame.pack(fill='both', expand=True)
 
         self.start_frame = ttk.Frame(self.content_frame, style='TFrame')
+        self.statistics_frame = ttk.Frame(self.content_frame, style='TFrame')
 
         self.page1_frame = ttk.Frame(self.content_frame, style='TFrame')
         self.page2_frame = ttk.Frame(self.content_frame, style='TFrame')
@@ -77,6 +79,8 @@ class GUI(tk.Tk):
         self.create_start_page()
         self.create_page_image()
         self.create_share_page()
+        self.creat_statistics_page()
+
         self.create_emotion_history()
 
         # Show the main page by default
@@ -205,8 +209,10 @@ class GUI(tk.Tk):
         button_b = ttk.Button(button_frame,padding=(10, 12),text="Attach Image",cursor="hand2", style="NavButton.TButton", command=lambda: self.show_frame(self.page1_frame))
         button_b.pack(side='left',pady=0)
 
-        button_c = ttk.Button(button_frame,padding=(10, 12), text="Statistics",cursor="hand2", style="NavButton.TButton", command=lambda: self.show_frame(self.page2_frame))
-        button_c.pack(side='left',pady=0)
+        button_c = ttk.Button(button_frame, padding=(10, 12), text="Statistics", cursor="hand2",
+                              style="NavButton.TButton",
+                              command=lambda: [self.creat_statistics_page(), self.show_frame(self.statistics_frame)])
+        button_c.pack(side='left', pady=0)
 
         button_d = ttk.Button(button_frame,padding=(10, 12), text="History",cursor="hand2", style="NavButton.TButton", command=lambda: self.show_frame(self.history_frame))
         button_d.pack(side='left',pady=0)
@@ -464,6 +470,74 @@ class GUI(tk.Tk):
 
         except Exception as e:
             print(f"Error animating GIF: {e}")
+
+    def creat_statistics_page(self):
+        # Clear existing content in the statistics_frame to avoid duplication
+        for widget in self.statistics_frame.winfo_children():
+            widget.destroy()
+
+        # Load the initial background image and set up dynamic resizing
+        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.main_bg_image = Image.open(self.bg_image_path)
+
+        # Create a label to hold the background image
+        self.bg_label = tk.Label(self.statistics_frame)
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the whole frame
+
+        # Bind the resize event to dynamically resize the background image using the shared function
+        self.statistics_frame.bind("<Configure>",
+                                   lambda event: self.resize_background(self.statistics_frame, self.bg_label))
+
+        # Create a Canvas to simulate a rounded square frame (background)
+        rounded_square_frame = tk.Canvas(self.statistics_frame, width=820, height=620, bg='#FFFFFF',
+                                         highlightthickness=0)
+        rounded_square_frame.pack(pady=50, padx=50)
+
+        # Draw a rounded rectangle as the background of the frame
+        create_rounded_rectangle(rounded_square_frame, 10, 10, 810, 610, radius=50, fill="#D8E4FE", outline="#E0E0E0")
+
+        # Create a frame inside the Canvas to hold the statistics content (in the rounded square)
+        content_frame = tk.Frame(rounded_square_frame, bg='#D8E4FE')
+        content_frame.place(x=20, y=20, width=780, height=530)  # Place it within the rounded square
+
+        # Find the most recent PNG file in the 'summary' directory
+        summary_directory = 'summary'  # Directory where the images are saved
+        list_of_files = glob.glob(os.path.join(summary_directory, '*.png'))  # Get all png files in the directory
+
+        if list_of_files:
+            most_recent_file = max(list_of_files, key=os.path.getctime)  # Get the most recent file by creation time
+            try:
+                # Load the most recent image
+                image = Image.open(most_recent_file)
+                image = image.resize((780, 450), Image.LANCZOS)  # Resize to fit within the frame
+                image_photo = ImageTk.PhotoImage(image)
+
+                # Display the image
+                image_label = tk.Label(content_frame, image=image_photo, bg='#D8E4FE')
+                image_label.image = image_photo  # Keep a reference to avoid garbage collection
+                image_label.pack(pady=0)
+
+            except Exception as e:
+                error_label = ttk.Label(content_frame, text=f"Error loading image: {e}", background="#D8E4FE")
+                error_label.pack(pady=10)
+        else:
+            # If no images found, show a message
+            no_image_label = ttk.Label(content_frame, text="No summary images available", background="#D8E4FE")
+            no_image_label.pack(pady=20)
+
+        # Create a button to return to the main page
+        return_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
+                                  highlightthickness=0)
+        return_button.pack(side='bottom', pady=0)
+
+        # Draw a rounded rectangle for the Return button
+        create_rounded_rectangle(return_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
+
+        # Add button text for Return to Main Page
+        return_button.create_text(120, 30, text="Return to Main Page", fill="white", font=('Helvetica', 14, 'bold'))
+
+        # Bind the button click event for returning to the main page
+        return_button.bind("<Button-1>", lambda event: self.show_frame(self.main_frame))
 
     def create_share_page(self):
         # Load background image path for the share frame
