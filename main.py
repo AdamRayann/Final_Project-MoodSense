@@ -11,6 +11,7 @@ from tkinter import Canvas
 from PIL import Image, ImageTk, ImageDraw
 import os
 import glob
+from datetime import datetime
 
 model = emotions_classifier.load_model()
 
@@ -712,6 +713,11 @@ class GUI(tk.Tk):
         except Exception as e:
             print(f"Error occurred while loading image: {e}")
 
+    import os
+    import glob
+    from tkinter import ttk
+    from PIL import Image, ImageTk
+
     def create_emotion_history(self):
         # Load background image for the emotion history frame
         bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
@@ -740,10 +746,58 @@ class GUI(tk.Tk):
                           background='#D8E4FE')
         title.pack(pady=20)
 
-        # Add some mock history items (you can later populate this with real data)
-        history_label = ttk.Label(content_frame, text="No past detections yet...", font=('Helvetica', 16),
-                                  background='#D8E4FE')
-        history_label.pack(pady=10)
+        # Table Header
+        table_header = tk.Frame(content_frame, bg='#D8E4FE')
+        table_header.pack(fill='x', padx=10, pady=10)
+
+        image_name_label = tk.Label(table_header, text="Image Name", bg="#D8E4FE", font=('Helvetica', 14, 'bold'))
+        image_name_label.grid(row=0, column=0, padx=90, pady=5, sticky='w')
+
+        time_label = tk.Label(table_header, text="Summary Time", bg="#D8E4FE", font=('Helvetica', 14, 'bold'))
+        time_label.grid(row=0, column=1, padx=7, pady=5, sticky='w')
+
+        action_label = tk.Label(table_header, text="Action", bg="#D8E4FE", font=('Helvetica', 14, 'bold'))
+        action_label.grid(row=0, column=2, padx=80, pady=5, sticky='w')
+
+        # Fetch the image history from the 'summary' directory
+        summary_directory = 'summary'  # Directory where the images are saved
+        list_of_images = glob.glob(os.path.join(summary_directory, '*.png'))  # Get all PNG files in the directory
+
+        if list_of_images:
+            # Table Body
+            for index, image_path in enumerate(list_of_images):
+                image_name = os.path.basename(image_path)  # Get the file name (timestamp as image name)
+
+                # Extract time from the image name (assuming image name is timestamp)
+                try:
+                    timestamp = os.path.splitext(image_name)[0]  # Remove file extension
+                    summary_time = datetime.strptime(timestamp,
+                                                     "%H%M%S")  # Assuming timestamp format like '20210922143015'
+                    formatted_time = summary_time.strftime('%H:%M:%S')  # Format the time for display
+                except ValueError:
+                    formatted_time = "Unknown"  # In case the image name isn't a valid timestamp
+
+                # Row frame
+                row_frame = tk.Frame(content_frame, bg='#D8E4FE')
+                row_frame.pack(fill='x', padx=50, pady=5)
+
+                # Image Name Column
+                image_label = tk.Label(row_frame, text=image_name, bg='#D8E4FE', font=('Helvetica', 12))
+                image_label.grid(row=index, column=0, padx=70, pady=5, sticky='w')
+
+                # Summary Time Column
+                time_label = tk.Label(row_frame, text=formatted_time, bg='#D8E4FE', font=('Helvetica', 12))
+                time_label.grid(row=index, column=1, padx=70, pady=5, sticky='w')
+
+                # Action (Clickable Label)
+                action_button = tk.Button(row_frame, text="View", font=('Helvetica', 12), bg='#3C73BE', fg='white',
+                                          cursor="hand2",
+                                          command=lambda path=image_path: self.show_image(path))
+                action_button.grid(row=index, column=2, padx=70, pady=5, sticky='w')
+        else:
+            # If no images found, show a message
+            no_image_label = ttk.Label(content_frame, text="No summary images available", background="#D8E4FE")
+            no_image_label.pack(pady=20)
 
         # Create a custom rounded button for returning to the main page
         return_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
@@ -758,6 +812,21 @@ class GUI(tk.Tk):
 
         # Bind the button click event for returning to the main page
         return_button.bind("<Button-1>", lambda event: self.show_frame(self.main_frame))
+
+    def show_image(self, image_path):
+        # Create a new window to display the image
+        image_window = tk.Toplevel(self)
+        image_window.title("Image Summary")
+        image_window.geometry("800x600")
+
+        # Load and display the image
+        image = Image.open(image_path)
+        image = image.resize((780, 550), Image.LANCZOS)  # Resize to fit within the window
+        image_photo = ImageTk.PhotoImage(image)
+
+        image_label = tk.Label(image_window, image=image_photo)
+        image_label.image = image_photo  # Keep a reference to avoid garbage collection
+        image_label.pack(fill='both', expand=True)
 
     def ask_camera_permission(self):
         # Create a new small window (dialog box)
