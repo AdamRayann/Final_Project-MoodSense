@@ -41,7 +41,7 @@ def predict_emotion(model, image):
 
     probs = model.predict(processed_image)
     probs[0][1]=probs[0][1]*500
-    probs[0][2] = probs[0][2] * 6
+    probs[0][2] = probs[0][2] * 1.5
     predicted_emotion = np.argmax(probs)
     print(probs)
     return predicted_emotion
