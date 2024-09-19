@@ -71,6 +71,7 @@ class GUI(tk.Tk):
         self.page2_frame = ttk.Frame(self.content_frame, style='TFrame')
         self.history_frame = ttk.Frame(self.content_frame, style='TFrame')
         self.share_frame = ttk.Frame(self.content_frame, style='TFrame')
+        self.about_frame = ttk.Frame(self.content_frame, style='TFrame')
 
         # Create the sidebar
         self.create_sidebar()
@@ -81,7 +82,7 @@ class GUI(tk.Tk):
         self.create_page_image()
         self.create_share_page()
         self.creat_statistics_page()
-
+        self.create_about_page()
         self.create_emotion_history()
 
         # Show the main page by default
@@ -170,7 +171,7 @@ class GUI(tk.Tk):
         self.nav_button4 = ttk.Button(self.sidebar_frame, text="About", image=about_icon, compound='left',
                                       cursor="hand2",
                                       padding=(120, 12), style="Sidebar.TButton",
-                                      command=lambda: self.show_frame(self.share_frame))
+                                      command=lambda: self.show_frame(self.about_frame))
         self.nav_button4.image = about_icon  # Keep a reference
         self.nav_button4.pack(pady=1)
 
@@ -633,6 +634,7 @@ class GUI(tk.Tk):
         # Bind the button click event for copying a link
         link_button.bind("<Button-1>", lambda event: self.copy_link_to_clipboard())
 
+
     def download_results(self):
         # Functionality to download results (to be implemented)
         print("Downloading results...")
@@ -642,6 +644,119 @@ class GUI(tk.Tk):
         self.clipboard_clear()
         self.clipboard_append("https://www.moodsense.com/share")
         print("Copied shareable link to clipboard!")
+
+    def create_about_page(self):
+        # Load the initial background image and set up dynamic resizing
+        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.main_bg_image = Image.open(self.bg_image_path)
+
+        # Create a label to hold the background image
+        self.bg_label = tk.Label(self.about_frame)
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the whole frame
+
+        # Bind the resize event to dynamically resize the background image using the shared function
+        self.about_frame.bind("<Configure>", lambda event: self.resize_background(self.about_frame, self.bg_label))
+
+        # Create a Canvas to simulate a rounded square frame (background)
+        rounded_square_frame = tk.Canvas(self.about_frame, width=820, height=825, bg='#FFFFFF', highlightthickness=0)
+        rounded_square_frame.pack(pady=50, padx=50)
+
+        # Draw a rounded rectangle as the background of the frame
+        create_rounded_rectangle(rounded_square_frame, 10, 10, 810, 825, radius=50, fill="#D8E4FE", outline="#E0E0E0")
+
+        # Create a frame inside the Canvas to hold the about content (in the rounded square)
+        content_frame = tk.Frame(rounded_square_frame, bg='#D8E4FE')
+        content_frame.place(x=20, y=20, width=780, height=830)  # Place it within the rounded square
+
+        # Title for About Page
+        title = ttk.Label(content_frame, text="About MoodSense", font=('Helvetica', 28, 'bold'), background="#D8E4FE")
+        title.pack(pady=20)
+
+        # Description of the app
+        description = ttk.Label(content_frame, text=(
+            "MoodSense is an innovative emotion recognition app that uses state-of-the-art machine learning algorithms "
+            "to detect and analyze emotions in real-time. Whether you're analyzing your emotions through images or live detection, "
+            "MoodSense offers a seamless experience with a sleek design and accurate results."
+        ), wraplength=700, background="#D8E4FE", font=('Helvetica', 14), justify='center')
+        description.pack(pady=10)
+
+        # Fun fact or quote
+        fun_fact = ttk.Label(content_frame, text=(
+            '"The only real valuable thing is intuition." - Albert Einstein'
+        ), background="#D8E4FE", font=('Helvetica', 16, 'italic'))
+        fun_fact.pack(pady=15)
+
+        # Add team member section
+        team_label = ttk.Label(content_frame, text="Meet Our Team", font=('Helvetica', 20, 'bold'),
+                               background="#D8E4FE")
+        team_label.pack(pady=10)
+
+        # Team members frame
+        team_frame = tk.Frame(content_frame, bg='#D8E4FE')
+        team_frame.pack(pady=10)
+
+        # Add mock team members with images and roles
+        team_members = [
+            ("Adam Rayan", "./entities/icons/adam.png"),
+            ("Majd Abbas", "./entities/icons/majd.png")
+        ]
+
+        for name, icon_path in team_members:
+            # Load and display the team member image
+            team_icon = Image.open(icon_path)
+            team_icon = team_icon.resize((80, 80), Image.LANCZOS)
+            team_photo = ImageTk.PhotoImage(team_icon)
+
+            team_member_frame = tk.Frame(team_frame, bg='#D8E4FE')
+            team_member_frame.pack(side='left', padx=30, pady=10)
+
+            team_image_label = tk.Label(team_member_frame, image=team_photo, bg='#D8E4FE')
+            team_image_label.image = team_photo  # Keep a reference to avoid garbage collection
+            team_image_label.pack(pady=5)
+
+            # Name and role of the team member
+            name_label = tk.Label(team_member_frame, text=name, font=('Helvetica', 14, 'bold'), bg='#D8E4FE')
+            name_label.pack()
+
+
+        # Create a fun interactive button
+        fun_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
+                               highlightthickness=0)
+        fun_button.pack(pady=20)
+
+        # Draw a rounded rectangle for the button
+        create_rounded_rectangle(fun_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
+
+        # Add button text for Return to Main Page
+        fun_button.create_text(120, 30, text="Did You Know?", fill="white", font=('Helvetica', 14, 'bold'))
+
+        # Bind the button click event to display a fun fact
+        fun_button.bind("<Button-1>", lambda event: self.display_fun_fact())
+
+        # Create a button to return to the main page
+        return_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
+                                  highlightthickness=0)
+        return_button.pack(pady=20)
+
+        # Draw a rounded rectangle for the Return button
+        create_rounded_rectangle(return_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
+
+        # Add button text for Return to Main Page
+        return_button.create_text(120, 30, text="Return to Main Page", fill="white", font=('Helvetica', 14, 'bold'))
+
+        # Bind the button click event for returning to the main page
+        return_button.bind("<Button-1>", lambda event: self.show_frame(self.main_frame))
+
+    def display_fun_fact(self):
+        # Display a fun fact in a new window
+        fun_fact_window = tk.Toplevel(self)
+        fun_fact_window.title("Did You Know?")
+        fun_fact_window.geometry("400x200")
+
+        fact_label = ttk.Label(fun_fact_window, text=(
+            "Did you know?\nMoodSense uses over 10,000 images for training to identify emotions with accuracy!"
+        ), wraplength=350, font=('Helvetica', 16), justify='center')
+        fact_label.pack(pady=30)
 
     def display_image(self, file_path):
         # Ensure the file path is absolute
