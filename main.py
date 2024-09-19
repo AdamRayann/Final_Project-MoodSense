@@ -28,7 +28,7 @@ class GUI(tk.Tk):
         self.bg_image = Image.open(self.bg_image_path)
 
         # Bind the window resize event to trigger the background resize function
-        self.bind('<Configure>', self.resize_background)
+        #self.bind('<Configure>', self.resize_background)
 
         self.style = ttk.Style(self)
         self.style.theme_use('clam')
@@ -220,23 +220,18 @@ class GUI(tk.Tk):
             self.sidebar_frame.pack(side='right', fill='y')  # Show the sidebar on the right
             self.sidebar_open = True
 
-    def resize_background(self, event):
-        # Get the current window size
-        window_width = self.winfo_width()
-        window_height = self.winfo_height()
+    def resize_background(self, frame, bg_label):
+        # Get the current window size for the frame
+        window_width = frame.winfo_width()
+        window_height = frame.winfo_height()
 
         # Resize the background image to fit the current window size
-        resized_bg_image = self.bg_image.resize((window_width, window_height), Image.LANCZOS)
+        resized_bg_image = self.main_bg_image.resize((window_width, window_height), Image.LANCZOS)
         bg_photo = ImageTk.PhotoImage(resized_bg_image)
 
-        # Create or update the label that holds the background image in main_frame
-        if hasattr(self, 'bg_label'):
-            self.bg_label.config(image=bg_photo)
-            self.bg_label.image = bg_photo  # Keep reference to avoid garbage collection
-        else:
-            self.bg_label = tk.Label(self.main_frame, image=bg_photo)
-            self.bg_label.image = bg_photo  # Keep reference to avoid garbage collection
-            self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the entire window
+        # Update the background label with the resized image
+        bg_label.config(image=bg_photo)
+        bg_label.image = bg_photo  # Keep a reference to avoid garbage collection
 
     def create_main_page(self):
         # Load background image for the main frame locally
@@ -318,32 +313,6 @@ class GUI(tk.Tk):
         # Resize event binding for dynamic background resizing
         self.main_frame.bind('<Configure>', self.resize_main_background)
 
-    '''
-
-
-        # Load background image from the entities directory
-        bg_image_path = "entities/ios1.jpeg"  # Path to your image file
-
-        # Open the image using PIL and resize it to fit the window
-        bg_image = Image.open(bg_image_path)
-        bg_image = bg_image.resize((1200, 700), Image.LANCZOS)  # Resize to fit the window
-        bg_photo = ImageTk.PhotoImage(bg_image)
-
-        # Create a label to hold the background image
-        self.bg_label = tk.Label(self.main_frame, image=bg_photo)
-        self.bg_label.image = bg_photo  # Keep a reference to avoid garbage collection
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make the background cover the whole frame
-
-        # Title on main page (placed on top of the background)
-        main_title = ttk.Label(self.main_frame, text="Welcome to MoodSense", font=('Helvetica', 24, 'bold'))
-        main_title.pack(pady=50)
-
-        # Buttons for detection methods
-        button1 = ttk.Button(self.main_frame, text="Attach image to detect emotion", command=lambda: self.show_frame(self.page1_frame))
-        button1.pack(pady=20)
-
-        button2 = ttk.Button(self.main_frame, text="Live emotion detector", command=self.open_camera)
-        button2.pack(pady=20)'''
 
     def resize_main_background(self, event):
         # Get the current window size for the main_frame
@@ -359,18 +328,17 @@ class GUI(tk.Tk):
         self.main_bg_label.image = self.main_bg_photo  # Keep reference to avoid garbage collection
 
     def create_start_page(self):
-        # Load background image from the entities directory
-        bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        # Load background image path for the start frame
+        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.main_bg_image = Image.open(self.bg_image_path)
 
-        # Open the background image using PIL and resize it to fit the window
-        bg_image = Image.open(bg_image_path)
-        bg_image = bg_image.resize((1200, 700), Image.LANCZOS)  # Resize to fit the window
-        bg_photo = ImageTk.PhotoImage(bg_image)
+        # Create the background label for the start frame
+        self.start_bg_label = tk.Label(self.start_frame)
+        self.start_bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the whole frame
 
-        # Create a label to hold the background image
-        self.bg_label = tk.Label(self.start_frame, image=bg_photo)  # Ensure matching background color
-        self.bg_label.image = bg_photo  # Keep a reference to avoid garbage collection
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make the background cover the whole frame
+        # Bind the <Configure> event to dynamically resize the background
+        self.start_frame.bind("<Configure>",
+                              lambda event: self.resize_background(self.start_frame, self.start_bg_label))
 
         # Create a Canvas to simulate a rounded square frame (div-like container)
         rounded_square_frame = tk.Canvas(self.start_frame, width=710, height=460, bg='#FFFFFF', highlightthickness=0)
@@ -412,18 +380,17 @@ class GUI(tk.Tk):
         rounded_button.bind("<Button-1>", lambda event: self.show_frame(self.main_frame))
 
     def create_page_image(self):
-        # Load background image from the entities directory
-        bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        # Load background image path for the page1 frame
+        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.main_bg_image = Image.open(self.bg_image_path)
 
-        # Open the background image using PIL and resize it to fit the window
-        bg_image = Image.open(bg_image_path)
-        bg_image = bg_image.resize((1200, 700), Image.LANCZOS)  # Resize to fit the window
-        bg_photo = ImageTk.PhotoImage(bg_image)
+        # Create the background label for the page1 frame
+        self.page1_bg_label = tk.Label(self.page1_frame)
+        self.page1_bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the whole frame
 
-        # Create a label to hold the background image
-        self.bg_label = tk.Label(self.page1_frame, image=bg_photo)  # Ensure matching background color
-        self.bg_label.image = bg_photo  # Keep a reference to avoid garbage collection
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make the background cover the whole frame
+        # Bind the <Configure> event to dynamically resize the background
+        self.page1_frame.bind("<Configure>",
+                              lambda event: self.resize_background(self.page1_frame, self.page1_bg_label))
 
         # Create a Canvas to simulate a rounded square frame (background)
         rounded_square_frame = tk.Canvas(self.page1_frame, width=710, height=460, bg='#FFFFFF', highlightthickness=0)
@@ -499,18 +466,17 @@ class GUI(tk.Tk):
             print(f"Error animating GIF: {e}")
 
     def create_share_page(self):
-        # Load background image from the entities directory
-        bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        # Load background image path for the share frame
+        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.main_bg_image = Image.open(self.bg_image_path)
 
-        # Open the background image using PIL and resize it to fit the window
-        bg_image = Image.open(bg_image_path)
-        bg_image = bg_image.resize((1200, 700), Image.LANCZOS)  # Resize to fit the window
-        bg_photo = ImageTk.PhotoImage(bg_image)
+        # Create the background label for the share frame
+        self.share_bg_label = tk.Label(self.share_frame)
+        self.share_bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the whole frame
 
-        # Create a label to hold the background image
-        self.bg_label = tk.Label(self.share_frame, image=bg_photo)  # Ensure matching background color
-        self.bg_label.image = bg_photo  # Keep a reference to avoid garbage collection
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make the background cover the whole frame
+        # Bind the <Configure> event to dynamically resize the background
+        self.share_frame.bind("<Configure>",
+                              lambda event: self.resize_background(self.share_frame, self.share_bg_label))
 
         # Create a Canvas to simulate a rounded square frame (background)
         rounded_square_frame = tk.Canvas(self.share_frame, width=710, height=460, bg='#FFFFFF', highlightthickness=0)
