@@ -189,8 +189,20 @@ class GUI(tk.Tk):
         nav_bar = ttk.Frame(self, style='NavBar.TFrame', height=50)
         nav_bar.pack(side='top', fill='x')
 
-        # Add the sidebar toggle button on the left
-        sidebar_button = ttk.Button(nav_bar,cursor="hand2", text="☰",padding=(10, 12), style="NavButton.TButton", command=self.toggle_sidebar)
+        # Load the logo image (replace with your image path)
+        logo_image_path = "./entities/icons/logo.png"  # Add the correct path to your image
+        logo_image = Image.open(logo_image_path)
+        logo_image = logo_image.resize((50, 40), Image.LANCZOS)  # Resize the image to fit in the navbar
+        logo_photo = ImageTk.PhotoImage(logo_image)
+
+        # Add the image to the top left of the nav bar
+        logo_label = tk.Label(nav_bar, image=logo_photo, background='#3C73BE')  # Set the same background color
+        logo_label.image = logo_photo  # Keep a reference to avoid garbage collection
+        logo_label.pack(side='left', padx=20, pady=0)
+
+        # Add the sidebar toggle button on the right
+        sidebar_button = ttk.Button(nav_bar, cursor="hand2", text="☰", padding=(10, 12), style="NavButton.TButton",
+                                    command=self.toggle_sidebar)
         sidebar_button.pack(side='right', padx=0, pady=0)
 
         # Center buttons A, B, C, D
@@ -205,19 +217,22 @@ class GUI(tk.Tk):
                              borderwidth=0,  # Remove the border
                              relief='flat')  # Make the button flat without borders
 
-        button_a = ttk.Button(button_frame,padding=(10, 12), text="Live Detector",cursor="hand2", style="NavButton.TButton",command=lambda:self.open_camera())
-        button_a.pack(side='left',pady=0)
+        button_a = ttk.Button(button_frame, padding=(10, 12), text="Live Detector", cursor="hand2",
+                              style="NavButton.TButton", command=lambda: self.open_camera())
+        button_a.pack(side='left', pady=0)
 
-        button_b = ttk.Button(button_frame,padding=(10, 12),text="Attach Image",cursor="hand2", style="NavButton.TButton", command=lambda: self.show_frame(self.page1_frame))
-        button_b.pack(side='left',pady=0)
+        button_b = ttk.Button(button_frame, padding=(10, 12), text="Attach Image", cursor="hand2",
+                              style="NavButton.TButton", command=lambda: self.show_frame(self.page1_frame))
+        button_b.pack(side='left', pady=0)
 
         button_c = ttk.Button(button_frame, padding=(10, 12), text="Statistics", cursor="hand2",
                               style="NavButton.TButton",
                               command=lambda: [self.creat_statistics_page(), self.show_frame(self.statistics_frame)])
         button_c.pack(side='left', pady=0)
 
-        button_d = ttk.Button(button_frame,padding=(10, 12), text="History",cursor="hand2", style="NavButton.TButton", command=lambda: self.show_frame(self.history_frame))
-        button_d.pack(side='left',pady=0)
+        button_d = ttk.Button(button_frame, padding=(10, 12), text="History", cursor="hand2",
+                              style="NavButton.TButton", command=lambda: self.show_frame(self.history_frame))
+        button_d.pack(side='left', pady=0)
 
     def toggle_sidebar(self):
         # Function to open/close the sidebar
@@ -828,105 +843,111 @@ class GUI(tk.Tk):
         except Exception as e:
             print(f"Error occurred while loading image: {e}")
 
-    import os
-    import glob
-    from tkinter import ttk
-    from PIL import Image, ImageTk
-
     def create_emotion_history(self):
-        # Load background image for the emotion history frame
-        bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
-        self.main_bg_image = Image.open(bg_image_path)
+        def load_history():
+            # Clear the previous content
+            for widget in self.history_frame.winfo_children():
+                widget.destroy()
 
-        # Create a label to hold the background image
-        self.bg_label = tk.Label(self.history_frame)
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the whole frame
+            # Load background image for the emotion history frame
+            bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+            self.main_bg_image = Image.open(bg_image_path)
 
-        # Bind the resize event to dynamically resize the background image using the shared function
-        self.history_frame.bind("<Configure>", lambda event: self.resize_background(self.history_frame, self.bg_label))
+            # Create a label to hold the background image
+            self.bg_label = tk.Label(self.history_frame)
+            self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the whole frame
 
-        # Create a Canvas to simulate a rounded square frame (background)
-        rounded_square_frame = tk.Canvas(self.history_frame, width=820, height=620, bg='#FFFFFF', highlightthickness=0)
-        rounded_square_frame.pack(pady=50, padx=50)
+            # Bind the resize event to dynamically resize the background image using the shared function
+            self.history_frame.bind("<Configure>",
+                                    lambda event: self.resize_background(self.history_frame, self.bg_label))
 
-        # Draw a rounded rectangle as the background of the frame
-        create_rounded_rectangle(rounded_square_frame, 10, 10, 810, 610, radius=50, fill="#D8E4FE", outline="#E0E0E0")
+            # Create a Canvas to simulate a rounded square frame (background)
+            rounded_square_frame = tk.Canvas(self.history_frame, width=820, height=620, bg='#FFFFFF',
+                                             highlightthickness=0)
+            rounded_square_frame.pack(pady=50, padx=50)
 
-        # Create a frame inside the Canvas to hold the history content (in the rounded square)
-        content_frame = tk.Frame(rounded_square_frame, bg='#D8E4FE')
-        content_frame.place(x=20, y=20, width=780, height=530)  # Place it within the rounded square
+            # Draw a rounded rectangle as the background of the frame
+            create_rounded_rectangle(rounded_square_frame, 10, 10, 810, 610, radius=50, fill="#D8E4FE",
+                                     outline="#E0E0E0")
 
-        # Title for Emotion Detection History
-        title = ttk.Label(content_frame, text="Emotion Detection History", font=('Helvetica', 24, 'bold'),
-                          background='#D8E4FE')
-        title.pack(pady=20)
+            # Create a frame inside the Canvas to hold the history content (in the rounded square)
+            content_frame = tk.Frame(rounded_square_frame, bg='#D8E4FE')
+            content_frame.place(x=20, y=20, width=780, height=530)  # Place it within the rounded square
 
-        # Table Header
-        table_header = tk.Frame(content_frame, bg='#D8E4FE')
-        table_header.pack(fill='x', padx=10, pady=10)
+            # Title for Emotion Detection History
+            title = ttk.Label(content_frame, text="Emotion Detection History", font=('Helvetica', 24, 'bold'),
+                              background='#D8E4FE')
+            title.pack(pady=20)
 
-        image_name_label = tk.Label(table_header, text="Image Name", bg="#D8E4FE", font=('Helvetica', 14, 'bold'))
-        image_name_label.grid(row=0, column=0, padx=90, pady=5, sticky='w')
+            # Table Header
+            table_header = tk.Frame(content_frame, bg='#D8E4FE')
+            table_header.pack(fill='x', padx=10, pady=10)
 
-        time_label = tk.Label(table_header, text="Summary Time", bg="#D8E4FE", font=('Helvetica', 14, 'bold'))
-        time_label.grid(row=0, column=1, padx=7, pady=5, sticky='w')
+            image_name_label = tk.Label(table_header, text="Image Name", bg="#D8E4FE", font=('Helvetica', 14, 'bold'))
+            image_name_label.grid(row=0, column=0, padx=90, pady=5, sticky='w')
 
-        action_label = tk.Label(table_header, text="Action", bg="#D8E4FE", font=('Helvetica', 14, 'bold'))
-        action_label.grid(row=0, column=2, padx=80, pady=5, sticky='w')
+            time_label = tk.Label(table_header, text="Summary Time", bg="#D8E4FE", font=('Helvetica', 14, 'bold'))
+            time_label.grid(row=0, column=1, padx=7, pady=5, sticky='w')
 
-        # Fetch the image history from the 'summary' directory
-        summary_directory = 'summary'  # Directory where the images are saved
-        list_of_images = glob.glob(os.path.join(summary_directory, '*.png'))  # Get all PNG files in the directory
+            action_label = tk.Label(table_header, text="Action", bg="#D8E4FE", font=('Helvetica', 14, 'bold'))
+            action_label.grid(row=0, column=2, padx=80, pady=5, sticky='w')
 
-        if list_of_images:
-            # Table Body
-            for index, image_path in enumerate(list_of_images):
-                image_name = os.path.basename(image_path)  # Get the file name (timestamp as image name)
+            # Fetch the image history from the 'summary' directory
+            summary_directory = 'summary'  # Directory where the images are saved
+            list_of_images = glob.glob(os.path.join(summary_directory, '*.png'))  # Get all PNG files in the directory
 
-                # Extract time from the image name (assuming image name is timestamp)
-                try:
-                    timestamp = os.path.splitext(image_name)[0]  # Remove file extension
-                    summary_time = datetime.strptime(timestamp,
-                                                     "%H%M%S")  # Assuming timestamp format like '20210922143015'
-                    formatted_time = summary_time.strftime('%H:%M:%S')  # Format the time for display
-                except ValueError:
-                    formatted_time = "Unknown"  # In case the image name isn't a valid timestamp
+            if list_of_images:
+                # Table Body
+                for index, image_path in enumerate(list_of_images):
+                    image_name = os.path.basename(image_path)  # Get the file name (timestamp as image name)
 
-                # Row frame
-                row_frame = tk.Frame(content_frame, bg='#D8E4FE')
-                row_frame.pack(fill='x', padx=50, pady=5)
+                    # Extract time from the image name (assuming image name is timestamp)
+                    try:
+                        timestamp = os.path.splitext(image_name)[0]  # Remove file extension
+                        summary_time = datetime.strptime(timestamp,
+                                                         "%H%M%S")  # Assuming timestamp format like '20210922143015'
+                        formatted_time = summary_time.strftime('%H:%M:%S')  # Format the time for display
+                    except ValueError:
+                        formatted_time = "Unknown"  # In case the image name isn't a valid timestamp
 
-                # Image Name Column
-                image_label = tk.Label(row_frame, text=image_name, bg='#D8E4FE', font=('Helvetica', 12))
-                image_label.grid(row=index, column=0, padx=70, pady=5, sticky='w')
+                    # Row frame
+                    row_frame = tk.Frame(content_frame, bg='#D8E4FE')
+                    row_frame.pack(fill='x', padx=50, pady=5)
 
-                # Summary Time Column
-                time_label = tk.Label(row_frame, text=formatted_time, bg='#D8E4FE', font=('Helvetica', 12))
-                time_label.grid(row=index, column=1, padx=70, pady=5, sticky='w')
+                    # Image Name Column
+                    image_label = tk.Label(row_frame, text=image_name, bg='#D8E4FE', font=('Helvetica', 12))
+                    image_label.grid(row=index, column=0, padx=70, pady=5, sticky='w')
 
-                # Action (Clickable Label)
-                action_button = tk.Button(row_frame, text="View", font=('Helvetica', 12), bg='#3C73BE', fg='white',
-                                          cursor="hand2",
-                                          command=lambda path=image_path: self.show_image(path))
-                action_button.grid(row=index, column=2, padx=70, pady=5, sticky='w')
-        else:
-            # If no images found, show a message
-            no_image_label = ttk.Label(content_frame, text="No summary images available", background="#D8E4FE")
-            no_image_label.pack(pady=20)
+                    # Summary Time Column
+                    time_label = tk.Label(row_frame, text=formatted_time, bg='#D8E4FE', font=('Helvetica', 12))
+                    time_label.grid(row=index, column=1, padx=70, pady=5, sticky='w')
 
-        # Create a custom rounded button for returning to the main page
-        return_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
-                                  highlightthickness=0)
-        return_button.pack(side='bottom', pady=20)
+                    # Action (Clickable Label)
+                    action_button = tk.Button(row_frame, text="View", font=('Helvetica', 12), bg='#3C73BE', fg='white',
+                                              cursor="hand2",
+                                              command=lambda path=image_path: self.show_image(path))
+                    action_button.grid(row=index, column=2, padx=70, pady=5, sticky='w')
+            else:
+                # If no images found, show a message
+                no_image_label = ttk.Label(content_frame, text="No summary images available", background="#D8E4FE")
+                no_image_label.pack(pady=20)
 
-        # Draw a rounded rectangle for the Return button
-        create_rounded_rectangle(return_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
+            # Create a custom rounded button for returning to the main page
+            return_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
+                                      highlightthickness=0)
+            return_button.pack(side='bottom', pady=20)
 
-        # Add button text for Return to Main Page
-        return_button.create_text(120, 30, text="Return to Main Page", fill="white", font=('Helvetica', 14, 'bold'))
+            # Draw a rounded rectangle for the Return button
+            create_rounded_rectangle(return_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
 
-        # Bind the button click event for returning to the main page
-        return_button.bind("<Button-1>", lambda event: self.show_frame(self.main_frame))
+            # Add button text for Return to Main Page
+            return_button.create_text(120, 30, text="Return to Main Page", fill="white", font=('Helvetica', 14, 'bold'))
+
+            # Bind the button click event for returning to the main page
+            return_button.bind("<Button-1>", lambda event: self.show_frame(self.main_frame))
+
+        # Reload the history page each time it's shown
+        self.history_frame.bind("<Visibility>", lambda event: load_history())
 
     def show_image(self, image_path):
         # Create a new window to display the image

@@ -27,7 +27,8 @@ def load_model():
 
     return network_loaded
 
-
+print("TensorFlow version:", tf.__version__)
+print("Keras version:", tf.keras.__version__)
 def process_image(img):
 
     #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Uncomment if the model was trained on grayscale images
