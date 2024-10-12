@@ -1,56 +1,80 @@
 import pyaudio
 import wave
-import compress_wav
+import threading
+import os
+import compress_wav  # Ensure this import is correct and available
 
-# Initialize Whisper model (you can use 'base', 'small', 'medium', or 'large')
-#model = whisper.load_model("base")
+class AudioRecorder:
+    def __init__(self, filename="./SharedData/audio/output.wav", rate=16000):
+        self.filename = filename
+        self.rate = rate
+        self.CHUNK = 1024
+        self.FORMAT = pyaudio.paInt16
+        self.CHANNELS = 1
+        self.frames = []
+        self.recording = False
+        self.stream = None
+        self.audio_interface = pyaudio.PyAudio()
 
-# Record audio function
-def record_audio(filename, duration=5, rate=16000):
-    CHUNK = 1024
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
+    def start_recording(self):
+        """Start recording audio continuously until paused."""
+        self.frames = []
+        self.recording = True
 
-    p = pyaudio.PyAudio()
+        # Open the audio stream
+        self.stream = self.audio_interface.open(
+            format=self.FORMAT,
+            channels=self.CHANNELS,
+            rate=self.rate,
+            input=True,
+            frames_per_buffer=self.CHUNK
+        )
 
-    # Open the stream
-    stream = p.open(format=FORMAT,
-                    channels=CHANNELS,
-                    rate=rate,
-                    input=True,
-                    frames_per_buffer=CHUNK)
+        print("Recording started...")
+        threading.Thread(target=self.record).start()
 
-    print("Recording...")
+    def record(self):
+        """Continuously record audio in a background thread."""
+        while self.recording:
+            data = self.stream.read(self.CHUNK)
+            self.frames.append(data)
 
-    frames = []
+    def pause_recording(self):
+        """Pause the recording and save the audio."""
+        if not self.recording:
+            return
 
-    for _ in range(0, int(rate / CHUNK * duration)):
-        data = stream.read(CHUNK)
-        frames.append(data)
+        print("Recording paused.")
+        self.recording = False
 
-    print("Recording complete")
+        # Stop the audio stream
+        self.stream.stop_stream()
+        self.stream.close()
 
-    # Stop and close the stream
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
+        # Save and compress the recorded audio
+        self.save_audio()
 
-    # Save the audio to a file
-    wf = wave.open(filename, 'wb')
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(p.get_sample_size(FORMAT))
-    wf.setframerate(rate)
-    wf.writeframes(b''.join(frames))
-    wf.close()
+    def save_audio(self):
+        """Save recorded frames to a WAV file."""
+        if not os.path.exists(os.path.dirname(self.filename)):
+            os.makedirs(os.path.dirname(self.filename))
 
+        with wave.open(self.filename, 'wb') as wf:
+            wf.setnchannels(self.CHANNELS)
+            wf.setsampwidth(self.audio_interface.get_sample_size(self.FORMAT))
+            wf.setframerate(self.rate)
+            wf.writeframes(b''.join(self.frames))
 
+        print(f"Audio saved to {self.filename}")
 
+        # Compress the saved audio
+        try:
+            print("Compressing audio...")
+            compress_wav.main()  # Ensure this function is correctly implemented in the compress_wav module
+            print("Audio compression complete.")
+        except Exception as e:
+            print(f"Error during audio compression: {e}")
 
-def main():
-
-    # Record audio for 5 seconds and save it as 'output.wav'
-    audio_filename = "./SharedData/audio/output.wav"
-    record_audio(audio_filename, duration=5)
-    compress_wav.main()
-
-
+    def terminate(self):
+        """Terminate the PyAudio interface."""
+        self.audio_interface.terminate()

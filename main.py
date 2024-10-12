@@ -5,13 +5,19 @@ from tkinter import ttk, filedialog
 from PIL import Image, ImageTk
 import emotions_classifier
 import offline_classification
+import detection_by_text
 import cv2
+
+import voice_detector_api
 from RoundButton import create_rounded_rectangle
 from tkinter import Canvas
 from PIL import Image, ImageTk, ImageDraw
 import os
 import glob
 from datetime import datetime
+
+from detection_by_text import TextClassifier
+from record_voice import AudioRecorder
 
 model = emotions_classifier.load_model()
 
@@ -24,10 +30,11 @@ class GUI(tk.Tk):
         self.configure(bg='#FFFFFF')  # Set background to white
         # Set the custom icon for the app window
         self.set_app_icon()
-
+        self.result_label = None
         # Load the background image path (not the actual image yet)
         self.bg_image_path = "entities/ios1.jpeg"
         self.bg_image = Image.open(self.bg_image_path)
+        self.audio_recorder = AudioRecorder()  # Initialize the audio recorder
 
         # Bind the window resize event to trigger the background resize function
         #self.bind('<Configure>', self.resize_background)
@@ -68,6 +75,7 @@ class GUI(tk.Tk):
         self.statistics_frame = ttk.Frame(self.content_frame, style='TFrame')
 
         self.page1_frame = ttk.Frame(self.content_frame, style='TFrame')
+        self.voice_detector_frame = ttk.Frame(self.content_frame, style='TFrame')
         self.page2_frame = ttk.Frame(self.content_frame, style='TFrame')
         self.history_frame = ttk.Frame(self.content_frame, style='TFrame')
         self.share_frame = ttk.Frame(self.content_frame, style='TFrame')
@@ -78,6 +86,8 @@ class GUI(tk.Tk):
 
         # Create main content pages
         self.create_main_page()
+        self.voice_detector_page()
+
         self.create_start_page()
         self.create_page_image()
         self.create_share_page()
@@ -220,6 +230,10 @@ class GUI(tk.Tk):
         button_a = ttk.Button(button_frame, padding=(10, 12), text="Live Detector", cursor="hand2",
                               style="NavButton.TButton", command=lambda: self.open_camera())
         button_a.pack(side='left', pady=0)
+
+        button_e = ttk.Button(button_frame, padding=(10, 12), text="Voice Detector", cursor="hand2",
+                              style="NavButton.TButton", command=lambda: self.show_frame(self.voice_detector_frame))
+        button_e.pack(side='left', pady=0)
 
         button_b = ttk.Button(button_frame, padding=(10, 12), text="Attach Image", cursor="hand2",
                               style="NavButton.TButton", command=lambda: self.show_frame(self.page1_frame))
@@ -660,6 +674,200 @@ class GUI(tk.Tk):
         self.clipboard_append("https://www.moodsense.com/share")
         print("Copied shareable link to clipboard!")
 
+    def voice_detector_page(self):
+        # Load the background image for the voice detector frame
+        bg_image_path = "entities/ios1.jpeg"
+        self.voice_bg_image = Image.open(bg_image_path)
+        window_width = self.voice_detector_frame.winfo_width()
+        window_height = self.voice_detector_frame.winfo_height()
+        self.voice_resized_bg_image = self.voice_bg_image.resize((window_width, window_height), Image.LANCZOS)
+        self.voice_bg_photo = ImageTk.PhotoImage(self.voice_resized_bg_image)
+
+        if hasattr(self, 'voice_bg_label'):
+            self.voice_bg_label.config(image=self.voice_bg_photo)
+            self.voice_bg_label.image = self.voice_bg_photo
+        else:
+            self.voice_bg_label = tk.Label(self.voice_detector_frame, image=self.voice_bg_photo)
+            self.voice_bg_label.image = self.voice_bg_photo
+            self.voice_bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        self.voice_detector_frame.bind("<Configure>", self.resize_voice_background)
+
+        rounded_square_frame = tk.Canvas(self.voice_detector_frame, width=820, height=620, bg='#FFFFFF',
+                                         highlightthickness=0)
+        rounded_square_frame.pack(pady=50, padx=50)
+        create_rounded_rectangle(rounded_square_frame, 10, 10, 810, 610, radius=50, fill="#D8E4FE", outline="#E0E0E0")
+
+        content_frame = tk.Frame(rounded_square_frame, bg='#D8E4FE')
+        content_frame.place(x=20, y=20, width=780, height=530)
+
+        title = ttk.Label(content_frame, text="Voice Detector", font=('Helvetica', 24, 'bold'), foreground="#3C73BE",
+                          background="#D8E4FE")
+        title.pack(pady=10)
+
+        self.result_label = tk.Label(content_frame, text="", font=('Helvetica', 14), bg='#D8E4FE')
+        self.result_label.pack(pady=10)
+
+        self.button_frame = tk.Frame(content_frame, bg='#D8E4FE')
+        self.button_frame.pack(pady=0)
+
+        # Start Button
+        self.start_button = tk.Canvas(self.button_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
+                                      highlightthickness=0)
+        create_rounded_rectangle(self.start_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
+        self.start_button.create_text(120, 30, text="Start Recording", fill="white", font=('Helvetica', 14, 'bold'))
+        self.start_button.pack(side="left", padx=10)
+        self.start_button.bind("<Button-1>", lambda event: self.start_voice_detection())
+
+        # Pause Button (Initially Hidden)
+        self.pause_button = tk.Canvas(self.button_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
+                                      highlightthickness=0)
+        create_rounded_rectangle(self.pause_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
+        self.pause_button.create_text(120, 30, text="Pause", fill="white", font=('Helvetica', 14, 'bold'))
+        self.pause_button.bind("<Button-1>", lambda event: self.pause_recording())
+
+        # Delete Button (Replaces Pause)
+        self.delete_button = tk.Canvas(self.button_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
+                                       highlightthickness=0)
+        create_rounded_rectangle(self.delete_button, 10, 10, 220, 50, radius=20, fill="red", outline="red")
+        self.delete_button.create_text(120, 30, text="Delete Recording", fill="white", font=('Helvetica', 14, 'bold'))
+        self.delete_button.bind("<Button-1>", lambda event: self.delete_voice_recording())
+
+        # Analyze Button (Initially Hidden)
+        self.analyze_button = tk.Canvas(self.button_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
+                                        highlightthickness=0)
+        create_rounded_rectangle(self.analyze_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
+        self.analyze_button.create_text(120, 30, text="Start Analyzing", fill="white", font=('Helvetica', 14, 'bold'))
+        self.analyze_button.bind("<Button-1>", lambda event: self.analyze_voice())
+
+        self.create_gif_frame(content_frame)
+
+    def start_voice_detection(self):
+        result = "Voice Recording Started"
+        if self.result_label:
+            self.result_label.config(text=result)
+
+        self.audio_recorder.start_recording()  # Start recording
+
+        # Start the GIF animation
+        self.animated_gif()
+
+        # Hide Start button and show Pause and Analyze buttons
+        self.start_button.pack_forget()
+        self.pause_button.pack(side="left", padx=10)
+        self.analyze_button.pack(side="right", padx=10)
+
+    def pause_recording(self):
+        result = "Voice Recording Paused"
+        if self.result_label:
+            self.result_label.config(text=result)
+
+        self.audio_recorder.pause_recording()  # Pause recording
+
+        # Stop the GIF animation
+        if hasattr(self, 'gif_animation_id'):
+            self.after_cancel(self.gif_animation_id)
+
+        # Replace Pause button with Delete button
+        self.pause_button.pack_forget()
+
+        self.analyze_button.pack(side="right", padx=10)
+        self.delete_button.pack(side="left", padx=10)
+
+
+        self.frame_index1 = 57  # Reset to frame 60
+        self.gif1.seek(self.frame_index1)
+
+        reset_frame = self.gif1.copy().resize((450, 250), Image.LANCZOS)
+        gif_frame1 = ImageTk.PhotoImage(reset_frame)
+
+        self.gif_label1.config(image=gif_frame1)
+        self.gif_label1.image = gif_frame1
+
+    def delete_voice_recording(self):
+        self.result_label.config(text="Voice Recording Deleted")
+
+        self.delete_button.pack_forget()
+        self.analyze_button.pack_forget()
+        self.start_button.pack(side="left", padx=10)
+
+        if hasattr(self, 'gif_animation_id'):
+            self.after_cancel(self.gif_animation_id)
+
+        self.frame_index1 = 57  # Reset to frame 60
+        self.gif1.seek(self.frame_index1)
+
+        reset_frame = self.gif1.copy().resize((450, 250), Image.LANCZOS)
+        gif_frame1 = ImageTk.PhotoImage(reset_frame)
+
+        self.gif_label1.config(image=gif_frame1)
+        self.gif_label1.image = gif_frame1
+
+    def animated_gif(self):
+        try:
+            self.gif1.seek(self.frame_index1)
+
+            resized_frame1 = self.gif1.resize((450, 250), Image.LANCZOS)
+            gif_frame1 = ImageTk.PhotoImage(resized_frame1)
+
+            self.gif_label1.config(image=gif_frame1)
+            self.gif_label1.image = gif_frame1
+
+            self.frame_index1 = (self.frame_index1 + 1) % self.gif1.n_frames
+
+            self.gif_animation_id = self.gif_label1.after(18, self.animated_gif)
+
+        except Exception as e:
+            print(f"Error animating GIF: {e}")
+
+    def create_gif_frame(self, parent_frame):
+        # Create a frame of size 500x250 for the GIF
+        gif_frame1 = tk.Frame(parent_frame, width=500, height=250, bg='#D8E4FE', highlightthickness=0)
+        gif_frame1.pack(pady=0)  # Adjust padding as needed
+
+        # Draw a rounded rectangle to make the GIF frame visually appealing (optional)
+        rounded_square_frame = tk.Canvas(gif_frame1, width=500, height=250, bg='#D8E4FE', highlightthickness=0)
+        rounded_square_frame.pack(pady=0, padx=0)
+
+        # Load the GIF image
+        gif_path = "entities/record.gif"  # Path to your GIF image file
+        self.gif1 = Image.open(gif_path)
+
+        # Set the initial frame to 60
+        self.frame_index1 = 57  # Start at frame 60
+        self.gif1.seek(self.frame_index1)  # Move to frame 60
+
+        # Resize and display the 60th frame
+        initial_frame = self.gif1.copy().resize((450, 250), Image.LANCZOS)
+        gif_frame1 = ImageTk.PhotoImage(initial_frame)
+
+        # Create a label to hold the GIF inside the content frame and display frame 60
+        self.gif_label1 = tk.Label(rounded_square_frame, image=gif_frame1, borderwidth=0, bg='#D8E4FE')
+        self.gif_label1.image = gif_frame1  # Keep a reference to avoid garbage collection
+        self.gif_label1.place(x=0, y=0, width=500, height=250)
+    def resize_voice_background(self, event):
+        # Get the current frame size
+        window_width = self.voice_detector_frame.winfo_width()
+        window_height = self.voice_detector_frame.winfo_height()
+
+        # Resize the background image to fit the current frame size
+        resized_bg_image = self.voice_bg_image.resize((window_width, window_height), Image.LANCZOS)
+        bg_photo = ImageTk.PhotoImage(resized_bg_image)
+
+        # Update the background label with the resized image
+        self.voice_bg_label.config(image=bg_photo)
+        self.voice_bg_label.image = bg_photo  # Keep a reference to avoid garbage collection
+
+
+
+    def analyze_voice(self):
+
+        result=detection_by_text.main()
+
+        print(f"Detected Emotion: {result}")
+        if self.result_label:
+            self.result_label.config(text=result)
+
     def create_about_page(self):
         # Load the initial background image and set up dynamic resizing
         self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
@@ -999,6 +1207,8 @@ class GUI(tk.Tk):
 
     def run(self):
         self.mainloop()
+
+
 
 
 def main():
