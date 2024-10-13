@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import camera
 import tkinter as tk
@@ -32,7 +34,7 @@ class GUI(tk.Tk):
         self.set_app_icon()
         self.result_label = None
         # Load the background image path (not the actual image yet)
-        self.bg_image_path = "entities/ios1.jpeg"
+        self.bg_image_path = "entities/ios1.png"
         self.bg_image = Image.open(self.bg_image_path)
         self.audio_recorder = AudioRecorder()  # Initialize the audio recorder
 
@@ -108,91 +110,85 @@ class GUI(tk.Tk):
         except Exception as e:
             print(f"Error setting app icon: {e}")
 
+    def load_icon(self,path):
+        """Helper function to load and resize icons."""
+        icon = Image.open(path).resize((25, 25), Image.LANCZOS)
+        return ImageTk.PhotoImage(icon)
 
     def create_sidebar(self):
-        # Set the style for the sidebar frame, labels, and buttons
+        # Configure the sidebar frame style
         self.style = ttk.Style()
-
-        # Configure the style for the sidebar frame
         self.style.configure('Sidebar.TFrame', background='#3C73BE')
 
-        # Configure the style for labels in the sidebar
-        self.style.configure('Sidebar.TLabel', background='#3C73BE', foreground='white', font=('Helvetica', 20, 'bold'))
-
-        # Configure the style for buttons in the sidebar
-        self.style.configure('Sidebar.TButton', background='#3C73BE', foreground='white', padding=(10, 12))
-
-        self.style.map('Sidebar.TButton',
-                       background=[('active', '#386AB0')],  # Change the background color on hover
-                       foreground=[('active', 'white')])  # Keep text color white on hover
-
-        # Apply the custom background color to the sidebar frame
+        # Sidebar frame setup
         self.sidebar_frame.config(style='Sidebar.TFrame')
 
-        # Add an empty label as a spacer to lower the content
-        self.spacer_label = ttk.Label(self.sidebar_frame, text="", style='Sidebar.TLabel')
-        self.spacer_label.pack(pady=20, padx=60)  # Adjust padding to move content lower
-
-        # Sidebar Title
-        self.title_label = ttk.Label(self.sidebar_frame, text="MoodSense", style='Sidebar.TLabel')
+        # Title image
+        title_image_path = "./entities/mood.png"
+        title_image = Image.open(title_image_path).resize((200, 110), Image.LANCZOS)
+        self.title_image = ImageTk.PhotoImage(title_image)
+        self.title_label = tk.Label(self.sidebar_frame, image=self.title_image, bg='#3C73BE', borderwidth=0)
         self.title_label.pack(pady=30)
 
-        # Load and resize the icons (make sure you have valid icon paths)
-        home_icon = Image.open("./entities/icons/home.png")
-        home_icon = home_icon.resize((20, 20), Image.LANCZOS)
-        home_icon = ImageTk.PhotoImage(home_icon)
+        # Load icons
+        home_icon = self.load_icon("./entities/icons/home.png")
+        history_icon = self.load_icon("./entities/icons/history.png")
+        share_icon = self.load_icon("./entities/icons/share.png")
+        about_icon = self.load_icon("./entities/icons/info.png")
+        logout_icon = self.load_icon("./entities/icons/arrow.png")
 
-        history_icon = Image.open("./entities/icons/history.png")
-        history_icon = history_icon.resize((20, 20), Image.LANCZOS)
-        history_icon = ImageTk.PhotoImage(history_icon)
+        # Define padding for alignment
+        icon_padding = { 'padx': 4, 'pady': 1}
+        # Create buttons using tk.Button
+        self.nav_button1 = tk.Button(
+            self.sidebar_frame, text="Home               ", image=home_icon,
+            font=('Helvetica', 12, 'bold'), compound='left', cursor="hand2",
+            command=lambda: self.show_frame(self.main_frame), bg='#3C73BE', fg='white',
+            padx=50, pady=12,anchor='w'  # Add padding directly
+        )
+        self.nav_button1.image = home_icon
+        self.nav_button1.pack(fill='x', **icon_padding)
 
-        share_icon = Image.open("./entities/icons/share (1).png")
-        share_icon = share_icon.resize((20, 20), Image.LANCZOS)
-        share_icon = ImageTk.PhotoImage(share_icon)
 
-        about_icon = Image.open("./entities/icons/about.png")
-        about_icon = about_icon.resize((20, 20), Image.LANCZOS)
-        about_icon = ImageTk.PhotoImage(about_icon)
+        self.nav_button2 = tk.Button(
+            self.sidebar_frame, text="History              ", image=history_icon,
+            font=('Helvetica', 12, 'bold'), compound='left', cursor="hand2",
+            command=lambda: self.show_frame(self.history_frame), bg='#3C73BE', fg='white',
+            padx=50, pady=12
+        )
+        self.nav_button2.image = history_icon
+        self.nav_button2.pack(fill='x', **icon_padding)
 
-        logout_icon = Image.open("./entities/icons/power.png")
-        logout_icon = logout_icon.resize((20, 20), Image.LANCZOS)
-        logout_icon = ImageTk.PhotoImage(logout_icon)
+        self.nav_button3 = tk.Button(
+            self.sidebar_frame, text="Share It!            ", image=share_icon,
+            font=('Helvetica', 12, 'bold'), compound='left', cursor="hand2",
+            command=lambda: self.show_frame(self.share_frame), bg='#3C73BE', fg='white',
+            padx=50, pady=12
+        )
+        self.nav_button3.image = share_icon
+        self.nav_button3.pack(fill='x', **icon_padding)
 
-        # Sidebar buttons with icons
-        self.nav_button1 = ttk.Button(self.sidebar_frame, text="Home", image=home_icon, compound='left', cursor="hand2",
-                                      padding=(120, 12), style="Sidebar.TButton",
-                                      command=lambda: self.show_frame(self.main_frame))
-        self.nav_button1.image = home_icon  # Keep a reference to avoid garbage collection
-        self.nav_button1.pack(pady=1)
-
-        self.nav_button2 = ttk.Button(self.sidebar_frame, text="Emotion History", image=history_icon, compound='left',
-                                      cursor="hand2", padding=(110, 12), style="Sidebar.TButton",
-                                      command=lambda: self.show_frame(self.history_frame))
-        self.nav_button2.image = history_icon  # Keep a reference
-        self.nav_button2.pack(pady=1)
-
-        self.nav_button3 = ttk.Button(self.sidebar_frame, text="Share", image=share_icon, compound='left',
-                                      cursor="hand2", padding=(120, 12), style="Sidebar.TButton",
-                                      command=lambda: self.show_frame(self.share_frame))
-
-        self.nav_button3.image = share_icon  # Keep a reference
-        self.nav_button3.pack(pady=1)
-
-        self.nav_button4 = ttk.Button(self.sidebar_frame, text="About", image=about_icon, compound='left',
-                                      cursor="hand2",
-                                      padding=(120, 12), style="Sidebar.TButton",
-                                      command=lambda: self.show_frame(self.about_frame))
-        self.nav_button4.image = about_icon  # Keep a reference
-        self.nav_button4.pack(pady=1)
+        self.nav_button4 = tk.Button(
+            self.sidebar_frame, text="About Us          ", image=about_icon,
+            font=('Helvetica', 12, 'bold'), compound='left', cursor="hand2",
+            command=lambda: self.show_frame(self.about_frame), bg='#3C73BE', fg='white',
+            padx=50, pady=12
+        )
+        self.nav_button4.image = about_icon
+        self.nav_button4.pack(fill='x', **icon_padding)
 
         # Line separator
-        self.line = ttk.Label(self.sidebar_frame, text="_________________", style='Sidebar.TLabel')
+        self.line = tk.Label(self.sidebar_frame, text="____________________", bg='#3C73BE', fg='white')
         self.line.pack(pady=50)
 
-        self.nav_button5 = ttk.Button(self.sidebar_frame, text="Logout", image=logout_icon, compound='left',
-                                      cursor="hand2", padding=(120, 12), style="Sidebar.TButton", command=self.quit)
-        self.nav_button5.image = logout_icon  # Keep a reference
-        self.nav_button5.pack(pady=10)
+        self.nav_button5 = tk.Button(
+            self.sidebar_frame, text="Logout             ", image=logout_icon,
+            font=('Helvetica', 11, 'bold'), compound='left', cursor="hand2",
+            command=self.quit, bg='#3C73BE', fg='white',
+            padx=50, pady=12
+        )
+        self.nav_button5.image = logout_icon
+        self.nav_button5.pack(fill='x', **icon_padding)
 
     def create_navigation_bar(self):
         # Create the navigation bar at the top
@@ -272,7 +268,7 @@ class GUI(tk.Tk):
 
     def create_main_page(self):
         # Load background image for the main frame locally
-        bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        bg_image_path = "entities/ios1.png"  # Path to your background image file
 
         # Open the background image using PIL and resize it to fit the main_frame
         self.main_bg_image = Image.open(bg_image_path)
@@ -366,7 +362,7 @@ class GUI(tk.Tk):
 
     def create_start_page(self):
         # Load background image path for the start frame
-        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.bg_image_path = "entities/ios1.png"  # Path to your background image file
         self.main_bg_image = Image.open(self.bg_image_path)
 
         # Create the background label for the start frame
@@ -418,7 +414,7 @@ class GUI(tk.Tk):
 
     def create_page_image(self):
         # Load background image path for the page1 frame
-        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.bg_image_path = "entities/ios1.png"  # Path to your background image file
         self.main_bg_image = Image.open(self.bg_image_path)
 
         # Create the background label for the page1 frame
@@ -508,7 +504,7 @@ class GUI(tk.Tk):
             widget.destroy()
 
         # Load the initial background image and set up dynamic resizing
-        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.bg_image_path = "entities/ios1.png"  # Path to your background image file
         self.main_bg_image = Image.open(self.bg_image_path)
 
         # Create a label to hold the background image
@@ -572,7 +568,7 @@ class GUI(tk.Tk):
 
     def create_share_page(self):
         # Load background image path for the share frame
-        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        self.bg_image_path = "entities/ios1.png"  # Path to your background image file
         self.main_bg_image = Image.open(self.bg_image_path)
 
         # Create the background label for the share frame
@@ -676,7 +672,7 @@ class GUI(tk.Tk):
 
     def voice_detector_page(self):
         # Load the background image for the voice detector frame
-        bg_image_path = "entities/ios1.jpeg"
+        bg_image_path = "entities/ios1.png"
         self.voice_bg_image = Image.open(bg_image_path)
         window_width = self.voice_detector_frame.winfo_width()
         window_height = self.voice_detector_frame.winfo_height()
@@ -869,37 +865,39 @@ class GUI(tk.Tk):
             self.result_label.config(text=result)
 
     def create_about_page(self):
-        # Load the initial background image and set up dynamic resizing
-        self.bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+        # Load the initial background image and store it for reuse
+        self.bg_image_path = "entities/ios1.png"  # Path to your background image file
         self.main_bg_image = Image.open(self.bg_image_path)
 
         # Create a label to hold the background image
         self.bg_label = tk.Label(self.about_frame)
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Make it cover the whole frame
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)  # Ensure it covers the whole frame
 
-        # Bind the resize event to dynamically resize the background image using the shared function
-        self.about_frame.bind("<Configure>", lambda event: self.resize_background(self.about_frame, self.bg_label))
+        # Bind the <Configure> event to dynamically resize the background image
+        self.about_frame.bind("<Configure>", self.update_background)
 
-        # Create a Canvas to simulate a rounded square frame (background)
-        rounded_square_frame = tk.Canvas(self.about_frame, width=820, height=825, bg='#FFFFFF', highlightthickness=0)
+        # Create a Canvas for rounded content frame
+        rounded_square_frame = tk.Canvas(self.about_frame, width=820, height=825,
+                                         bg='#FFFFFF', highlightthickness=0)
         rounded_square_frame.pack(pady=50, padx=50)
 
         # Draw a rounded rectangle as the background of the frame
-        create_rounded_rectangle(rounded_square_frame, 10, 10, 810, 825, radius=50, fill="#D8E4FE", outline="#E0E0E0")
+        create_rounded_rectangle(rounded_square_frame, 10, 10, 810, 825,
+                                 radius=50, fill="#D8E4FE", outline="#E0E0E0")
 
-        # Create a frame inside the Canvas to hold the about content (in the rounded square)
+        # Create a content frame inside the rounded rectangle
         content_frame = tk.Frame(rounded_square_frame, bg='#D8E4FE')
-        content_frame.place(x=20, y=20, width=780, height=830)  # Place it within the rounded square
+        content_frame.place(x=20, y=20, width=780, height=830)
 
-        # Title for About Page
-        title = ttk.Label(content_frame, text="About MoodSense", font=('Helvetica', 28, 'bold'), background="#D8E4FE")
+        # Add a title for the About page
+        title = ttk.Label(content_frame, text="About MoodSense",
+                          font=('Helvetica', 28, 'bold'), background="#D8E4FE")
         title.pack(pady=20)
 
-        # Description of the app
+        # App description
         description = ttk.Label(content_frame, text=(
-            "MoodSense is an innovative emotion recognition app that uses state-of-the-art machine learning algorithms "
-            "to detect and analyze emotions in real-time. Whether you're analyzing your emotions through images or live detection, "
-            "MoodSense offers a seamless experience with a sleek design and accurate results."
+            "MoodSense is an innovative emotion recognition app using state-of-the-art machine learning "
+            "to detect and analyze emotions in real-time."
         ), wraplength=700, background="#D8E4FE", font=('Helvetica', 14), justify='center')
         description.pack(pady=10)
 
@@ -909,76 +907,88 @@ class GUI(tk.Tk):
         ), background="#D8E4FE", font=('Helvetica', 16, 'italic'))
         fun_fact.pack(pady=15)
 
-        # Add team member section
-        team_label = ttk.Label(content_frame, text="Meet Our Team", font=('Helvetica', 20, 'bold'),
-                               background="#D8E4FE")
+        # Team section
+        team_label = ttk.Label(content_frame, text="Meet Our Team",
+                               font=('Helvetica', 20, 'bold'), background="#D8E4FE")
         team_label.pack(pady=10)
 
-        # Team members frame
         team_frame = tk.Frame(content_frame, bg='#D8E4FE')
         team_frame.pack(pady=10)
 
-        # Add mock team members with images and roles
-        team_members = [
-            ("Adam Rayan", "./entities/icons/adam.png"),
-            ("Majd Abbas", "./entities/icons/majd.png")
-        ]
+        # Load and display team member images
+        team_members = [("Adam Rayan", "./entities/icons/adam.png"),
+                        ("Majd Abbas", "./entities/icons/majd.png")]
 
         for name, icon_path in team_members:
-            # Load and display the team member image
-            team_icon = Image.open(icon_path)
-            team_icon = team_icon.resize((80, 80), Image.LANCZOS)
+            team_icon = Image.open(icon_path).resize((80, 80), Image.LANCZOS)
             team_photo = ImageTk.PhotoImage(team_icon)
 
-            team_member_frame = tk.Frame(team_frame, bg='#D8E4FE')
-            team_member_frame.pack(side='left', padx=30, pady=10)
+            member_frame = tk.Frame(team_frame, bg='#D8E4FE')
+            member_frame.pack(side='left', padx=30, pady=10)
 
-            team_image_label = tk.Label(team_member_frame, image=team_photo, bg='#D8E4FE')
-            team_image_label.image = team_photo  # Keep a reference to avoid garbage collection
+            team_image_label = tk.Label(member_frame, image=team_photo, bg='#D8E4FE')
+            team_image_label.image = team_photo  # Store reference to avoid garbage collection
             team_image_label.pack(pady=5)
 
-            # Name and role of the team member
-            name_label = tk.Label(team_member_frame, text=name, font=('Helvetica', 14, 'bold'), bg='#D8E4FE')
+            name_label = tk.Label(member_frame, text=name, font=('Helvetica', 14, 'bold'), bg='#D8E4FE')
             name_label.pack()
 
-
-        # Create a fun interactive button
-        fun_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
-                               highlightthickness=0)
+        # Fun fact button
+        fun_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60,
+                               bg='#D8E4FE', bd=0, highlightthickness=0)
         fun_button.pack(pady=20)
 
-        # Draw a rounded rectangle for the button
-        create_rounded_rectangle(fun_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
-
-        # Add button text for Return to Main Page
+        create_rounded_rectangle(fun_button, 10, 10, 220, 50, radius=20,
+                                 fill="#3C73BE", outline="#3C73BE")
         fun_button.create_text(120, 30, text="Did You Know?", fill="white", font=('Helvetica', 14, 'bold'))
-
-        # Bind the button click event to display a fun fact
         fun_button.bind("<Button-1>", lambda event: self.display_fun_fact())
 
-        # Create a button to return to the main page
-        return_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60, bg='#D8E4FE', bd=0,
-                                  highlightthickness=0)
+        # Return to main page button
+        return_button = tk.Canvas(content_frame, cursor="hand2", width=230, height=60,
+                                  bg='#D8E4FE', bd=0, highlightthickness=0)
         return_button.pack(pady=20)
 
-        # Draw a rounded rectangle for the Return button
-        create_rounded_rectangle(return_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
-
-        # Add button text for Return to Main Page
+        create_rounded_rectangle(return_button, 10, 10, 220, 50, radius=20,
+                                 fill="#3C73BE", outline="#3C73BE")
         return_button.create_text(120, 30, text="Return to Main Page", fill="white", font=('Helvetica', 14, 'bold'))
-
-        # Bind the button click event for returning to the main page
         return_button.bind("<Button-1>", lambda event: self.show_frame(self.main_frame))
 
+    def update_background(self, event):
+        """Resize and update the background image based on the frame size."""
+        frame_width = self.about_frame.winfo_width()
+        frame_height = self.about_frame.winfo_height()
+
+        # Resize the background image to fit the frame size
+        resized_bg = self.main_bg_image.resize((frame_width, frame_height), Image.LANCZOS)
+        bg_photo = ImageTk.PhotoImage(resized_bg)
+
+        # Update the label with the resized image
+        self.bg_label.config(image=bg_photo)
+        self.bg_label.image = bg_photo  # Store reference to avoid garbage collection
+
+    import random
+
     def display_fun_fact(self):
-        # Display a fun fact in a new window
+        # Define a list of fun facts
+        fun_facts = [
+            "Did you know?\nMoodSense uses over 10,000 images for training to identify emotions with accuracy!",
+            "Did you know?\nHumans can express up to 27 distinct emotions through facial expressions!",
+            "Did you know?\nSmiling increases your estimated lifetime, so keep smiling buddy :D ",
+            "Did you know?\nFacial muscles can move in 43 different ways, creating a variety of micro-expressions!",
+            "Did you know?\nStudies show that AI-based emotion detection is now 85% as accurate as human analysis.",
+            "Did you know?\nMoodSense is trained to recognize emotions across different cultures and demographics!"
+        ]
+
+        # Select a random fact from the list
+        selected_fact = random.choice(fun_facts)
+
+        # Display the selected fun fact in a new window
         fun_fact_window = tk.Toplevel(self)
         fun_fact_window.title("Did You Know?")
         fun_fact_window.geometry("400x200")
 
-        fact_label = ttk.Label(fun_fact_window, text=(
-            "Did you know?\nMoodSense uses over 10,000 images for training to identify emotions with accuracy!"
-        ), wraplength=350, font=('Helvetica', 16), justify='center')
+        fact_label = ttk.Label(fun_fact_window, text=selected_fact,
+                               wraplength=350, font=('Helvetica', 16), justify='center')
         fact_label.pack(pady=30)
 
     def display_image(self, file_path):
@@ -1058,7 +1068,7 @@ class GUI(tk.Tk):
                 widget.destroy()
 
             # Load background image for the emotion history frame
-            bg_image_path = "entities/ios1.jpeg"  # Path to your background image file
+            bg_image_path = "entities/ios1.png"  # Path to your background image file
             self.main_bg_image = Image.open(bg_image_path)
 
             # Create a label to hold the background image
