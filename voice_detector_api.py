@@ -1,29 +1,4 @@
-'''from flask import Flask, request, jsonify
-import os
 
-app = Flask(__name__)
-
-@app.route('/transcribe', methods=['POST'])
-def transcribe_audio():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
-
-    file = request.files['file']
-    if file:
-        filepath = os.path.join('/app/data', file.filename)
-        file.save(filepath)
-        # Assume you have a function to handle transcription
-        result = transcribe(filepath)  # Function you would define to use Whisper or similar
-        return jsonify(result)
-    return jsonify({'error': 'No file provided'}), 400
-
-def transcribe(file_path):
-    # Placeholder for your transcription logic
-    return {"transcription": "transcribed text"}
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-'''
 import subprocess
 import record_voice
 def run_docker_container():
@@ -42,8 +17,8 @@ def run_docker_container():
 
         # Print the output from Docker
         if result.stdout:
-            print("Output from Docker:")
-            print(result.stdout)
+            #print("Output from Docker:")
+            #print(result.stdout)
             return result.stdout
 
 

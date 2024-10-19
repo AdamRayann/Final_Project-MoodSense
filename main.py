@@ -1,4 +1,5 @@
 import random
+import threading
 
 import numpy as np
 import camera
@@ -18,7 +19,6 @@ import os
 import glob
 from datetime import datetime
 
-from detection_by_text import TextClassifier
 from record_voice import AudioRecorder
 
 model = emotions_classifier.load_model()
@@ -701,8 +701,9 @@ class GUI(tk.Tk):
                           background="#D8E4FE")
         title.pack(pady=10)
 
+        # Initially hidden result label
         self.result_label = tk.Label(content_frame, text="", font=('Helvetica', 14), bg='#D8E4FE')
-        self.result_label.pack(pady=10)
+        self.result_label.pack_forget()  # Hidden by default
 
         self.button_frame = tk.Frame(content_frame, bg='#D8E4FE')
         self.button_frame.pack(pady=0)
@@ -735,6 +736,10 @@ class GUI(tk.Tk):
         create_rounded_rectangle(self.analyze_button, 10, 10, 220, 50, radius=20, fill="#3C73BE", outline="#3C73BE")
         self.analyze_button.create_text(120, 30, text="Start Analyzing", fill="white", font=('Helvetica', 14, 'bold'))
         self.analyze_button.bind("<Button-1>", lambda event: self.analyze_voice())
+
+        # Text box for displaying results - initially hidden
+        self.result_textbox = tk.Text(content_frame, height=10, width=50, wrap="word")
+        self.result_textbox.pack_forget()  # Hidden initially
 
         self.create_gif_frame(content_frame)
 
@@ -781,8 +786,9 @@ class GUI(tk.Tk):
         self.gif_label1.image = gif_frame1
 
     def delete_voice_recording(self):
+        """Delete the recording and reset the UI."""
+        self.result_textbox.pack_forget()  # Hide the result text box
         self.result_label.config(text="Voice Recording Deleted")
-
         self.delete_button.pack_forget()
         self.analyze_button.pack_forget()
         self.start_button.pack(side="left", padx=10)
@@ -790,15 +796,14 @@ class GUI(tk.Tk):
         if hasattr(self, 'gif_animation_id'):
             self.after_cancel(self.gif_animation_id)
 
-        self.frame_index1 = 57  # Reset to frame 60
+        # Reset GIF to original state
+        self.frame_index1 = 57
         self.gif1.seek(self.frame_index1)
-
         reset_frame = self.gif1.copy().resize((450, 250), Image.LANCZOS)
         gif_frame1 = ImageTk.PhotoImage(reset_frame)
-
         self.gif_label1.config(image=gif_frame1)
         self.gif_label1.image = gif_frame1
-
+        self.gif_label1.pack()  # Show the GIF again
     def animated_gif(self):
         try:
             self.gif1.seek(self.frame_index1)
@@ -854,16 +859,32 @@ class GUI(tk.Tk):
         self.voice_bg_label.config(image=bg_photo)
         self.voice_bg_label.image = bg_photo  # Keep a reference to avoid garbage collection
 
-
-
     def analyze_voice(self):
+        print("Analyzing voice...")
+        self.run_in_thread()
 
-        result=detection_by_text.main()
+    def run_in_thread(self):
+        """Run emotion detection in a separate thread to avoid freezing the UI"""
 
-        print(f"Detected Emotion: {result}")
-        if self.result_label:
-            self.result_label.config(text=result)
+        def target():
+            result = detection_by_text.main()  # Run the emotion detection from Docker
+            print(f"Detected Emotion: {result}")
 
+            # Stop the GIF animation and hide the GIF
+            if hasattr(self, 'gif_animation_id'):
+                self.after_cancel(self.gif_animation_id)
+
+            # Hide the GIF
+            self.gif_label.pack_forget()
+
+            # Show the result text box and insert the result
+            self.result_textbox.pack(pady=20)
+            self.result_textbox.delete(1.0, tk.END)  # Clear the text box before inserting the result
+            self.result_textbox.insert(tk.END, result)
+
+        # Create and start the thread
+        thread = threading.Thread(target=target)
+        thread.start()
     def create_about_page(self):
         # Load the initial background image and store it for reuse
         self.bg_image_path = "entities/ios1.png"  # Path to your background image file
