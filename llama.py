@@ -34,4 +34,3 @@ def main(transcript):
         if res[i] == '.':
             new_res += '\n'  # Adds a newline character after each period
     return new_res
-
