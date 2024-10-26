@@ -70,4 +70,4 @@ MOODSense provides a personalized emotional experience by detecting emotions, ex
     Launch the application to experience MOODSense's services . The first run may take some time to set up, depending on your internet speed. So, relax and grab a mug of coffee while it loads ;D
 
 
-This README provides an overview of the project, its features, installation instructions, and Docker usage steps, giving users all they need to understand and deploy MOODSense. Let me know if you'd like to further customize or expand any sections!
+
