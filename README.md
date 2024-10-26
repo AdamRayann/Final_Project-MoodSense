@@ -17,8 +17,7 @@ MOODSense is an advanced emotion recognition application that combines deep lear
 ---
 
 
-<video controls src="./entities/intro.mp4" title="Title"></video>
-
+[Watch the Intro Video](./entities/intro.mp4)
 ## Features
 
 - **Real-Time and Batch Emotion Detection**: Detect emotions in real-time or through uploaded images/audio.
