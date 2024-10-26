@@ -47,7 +47,7 @@ MOODSense provides a personalized emotional experience by detecting emotions, ex
 
 ### Prerequisites
 
-- **conda Python 3.7** installed on your system.
+- **conda Python 3.7.16** installed on your system.
 - **Docker** installed for containerized deployment.
 
 ### Installation
