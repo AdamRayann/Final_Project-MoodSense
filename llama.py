@@ -11,7 +11,7 @@ def classify_llama(transcript="i feel so bad"):
         messages=[
             {
                 "role": "user",
-                "content": f"Analyze the following text and classify its emotion to : sad ,happy , angry , surprised , afraid ,nuetral,optimism , or a compination . return first the expression then the explaianation : '{text_to_analyze}'"
+                "content": f"Analyze the following text and classify its emotion to : sad ,happy , angry , surprised , afraid ,nuetral,optimism , or a compination . return first the expression then the explaianation then in brief suggest a way to feel beter : '{text_to_analyze}'"
 
             }
         ],

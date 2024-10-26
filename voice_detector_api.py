@@ -1,15 +1,16 @@
 
 import subprocess
+from pathlib import Path
+
 import record_voice
 def run_docker_container():
     try:
-
+        audio_path = Path(__file__).resolve().parent / "SharedData" / "audio"
         # Define the command to run your Docker container
         command = [
             "docker", "run",
             "--cpus=5", "--memory=6g",  # Adjust these values based on your system's capability
-            "-v",
-            "C:/Users/adamr/OneDrive/שולחן העבודה/project/pythonProject1/Final_Project/SharedData/audio:/app/data",
+            "-v", f"{audio_path}:/app/data",
             "voice-detector-app"
         ]
 

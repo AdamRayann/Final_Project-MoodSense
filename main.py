@@ -1,5 +1,7 @@
 import random
+import subprocess
 import threading
+from pathlib import Path
 
 import numpy as np
 import camera
@@ -1239,10 +1241,19 @@ class GUI(tk.Tk):
     def run(self):
         self.mainloop()
 
+def build_docker_image():
+    try:
+        # Command to build the Docker image from the Dockerfile named "fofo"
+        command = ["docker", "build", "-f", "Dockerfile", "-t", "voice-detector-app", "."]
+        subprocess.run(command, check=True)
+        print("Docker image built successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error building Docker image: {e}")
 
 
 
 def main():
+    build_docker_image()
     app = GUI()
     app.run()
 
