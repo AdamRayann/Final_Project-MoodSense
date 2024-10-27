@@ -4,6 +4,12 @@
 
 MOODSense is an advanced emotion recognition application that combines deep learning, computer vision, and generative models to deliver real-time emotional analysis through facial expression and voice detection. Built with a user-friendly interface, MOODSense can operate in real-time or analyze uploaded images and audio, providing users with a comprehensive emotional insight. The system offers an explanation for detected emotions and provides actionable suggestions for mood improvement, enhancing user experience and emotional awareness.
 
+---
+
+## :movie_camera: **[Watch the Project Overview Video Here!](https://youtu.be/oIidj_s_qN0)** :movie_camera:
+
+---
+
 ## Table of Contents
 
 - [Features](#features)
@@ -13,10 +19,6 @@ MOODSense is an advanced emotion recognition application that combines deep lear
 - [Getting Started](#getting-started)
 - [Docker Usage](#docker-usage)
 - [License](#license)
-
----
-
-## :movie_camera: **[Watch the Project Overview Video Here!](https://youtu.be/oIidj_s_qN0)** :movie_camera:
 
 ---
 
