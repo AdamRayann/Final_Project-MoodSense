@@ -56,24 +56,43 @@ MOODSense provides a personalized emotional experience by detecting emotions, ex
 - **conda Python 3.7.16** installed on your system.
 - **Docker** installed for containerized deployment.
 
-### Installation
+### Installation Guide
 
-1. **Clone the repository:**
+1. **Download Docker**
+
+    Ensure you have Docker installed on your system. You can download it [here](https://www.docker.com/products/docker-desktop).
+
+2. **Download Anaconda**
+
+    Install Anaconda for easy management of Python environments. Download it [here](https://www.anaconda.com/products/distribution).
+
+3. **Clone the Repository:**
    ```bash
    git clone https://github.com/AdamRayann/Final_Project.git
 
+4. **Install Python 3.7.17:**
+   Create a new environment with Python 3.7.16 using Anaconda:
 
-2. **Install dependencies:**
+   ```bash
+      conda create -n myenv python=3.7.16
+
+Then, activate the environment:
+
+      conda activate myenv
+
+
+5. **Install Dependencies:**
     ```bash
-    pip install -r requirements.txt
+       pip install -r requirements.txt
+***Note: Ensure you install the specific versions listed in requirements.txt to avoid compatibility issues. Alternatively, you can install each dependency manually, matching the specified versions.***
 
-3. **Start Docker:**
+6. **Start Docker:**
 
-    Start Docker on your system 
+    Make sure Docker is running on your system to enable container-based features.
 
-4. **Run the Application**:
+7. **Run the Application**:
 
-    Launch the application to experience MOODSense's services . The first run may take some time to set up, depending on your internet speed. So, relax and grab a mug of coffee while it loads ;D
+    Launch the application to experience MOODSense's services . The initial setup may take a bit of time, depending on your internet speed. So, relax and grab a mug of coffee while it loads. ;D
 
 
 
