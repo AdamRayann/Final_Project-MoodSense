@@ -78,7 +78,7 @@ MOODSense provides a personalized emotional experience by detecting emotions, ex
 
 Then, activate the environment:
 
-    conda activate myenv
+        conda activate myenv
 
 
 5. **Install Dependencies:**
