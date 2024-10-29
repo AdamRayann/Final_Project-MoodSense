@@ -70,20 +70,20 @@ MOODSense provides a personalized emotional experience by detecting emotions, ex
    ```bash
    git clone https://github.com/AdamRayann/Final_Project.git
 
-4. **Install Python 3.7.17:**
+4. **Install Python 3.7.16:**
    Create a new environment with Python 3.7.16 using Anaconda:
 
    ```bash
-      conda create -n myenv python=3.7.16
+   conda create -n myenv python=3.7.16
 
 Then, activate the environment:
 
-      conda activate myenv
+    conda activate myenv
 
 
 5. **Install Dependencies:**
     ```bash
-       pip install -r requirements.txt
+    pip install -r requirements.txt
 ***Note: Ensure you install the specific versions listed in requirements.txt to avoid compatibility issues. Alternatively, you can install each dependency manually, matching the specified versions.***
 
 6. **Start Docker:**
