@@ -80,7 +80,7 @@ Then, activate the environment:
         conda activate myenv
 
 
-5. **Install Dependencies:**
+5. **Install the Dependencies:**
     ```bash
     pip install -r requirements.txt
 ***Note: Ensure you install the specific versions listed in requirements.txt to avoid compatibility issues. Alternatively, you can install each dependency manually, matching the specified versions.***
