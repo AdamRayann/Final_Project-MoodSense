@@ -96,10 +96,10 @@ Then, activate the environment:
 
 ## Additional Information
 
-For any additional information, please don’t hesitate to reach out!  
-📧 **Email:** [adam.rayan67@gmail.com](mailto:adam.rayan67@gmail.com)  
+For more information, feedback, or personal impressions, please don’t hesitate to reach out!  
+📧 **Email:** [adam.rayan67@gmail.com](mailto:adam.rayan67@gmail.com)
 
-I’m happy to answer any questions or provide further details!
+I’m happy to answer questions, hear your thoughts, or provide further details.
 
 
 
