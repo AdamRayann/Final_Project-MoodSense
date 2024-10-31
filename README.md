@@ -17,6 +17,7 @@ MOODSense is an advanced emotion recognition application that combines deep lear
 - [User Experience](#user-experience)
 - [Applications](#applications)
 - [Getting Started](#getting-started)
+- [Additional Information](#Additional-Information)
 
 
 ---
@@ -92,6 +93,14 @@ Then, activate the environment:
 7. **Run the Application**:
 
     Launch the application to experience MOODSense's services . The initial setup may take a bit of time, depending on your internet speed. So, relax and grab a mug of coffee while it loads. ;D
+
+## Additional Information
+
+For any additional information, please don’t hesitate to reach out!  
+📧 **Email:** [adam.rayan67@gmail.com](mailto:adam.rayan67@gmail.com)  
+
+I’m happy to answer any questions or provide further details!
+
 
 
 
