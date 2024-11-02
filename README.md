@@ -92,7 +92,7 @@ Then, activate the environment:
 
 7. **Run the Application**:
 
-    Launch the application to experience MOODSense's services . The initial setup may take a bit of time, depending on your internet speed. So, relax and grab a mug of coffee while it loads. ;D
+    Simply executing the main script will initiate the entire system . The initial setup may take a bit of time, depending on your internet speed. So, relax and grab a mug of coffee while it loads. ;D
 
 ## Additional Information
 
