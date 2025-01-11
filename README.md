@@ -7,7 +7,7 @@ MOODSense is an advanced emotion recognition application that combines deep lear
 ---
 
 ## :movie_camera: **[Watch the Project Overview Video Here!](https://youtu.be/oIidj_s_qN0)** :movie_camera:
-
+ 
 ---
 
 ## Table of Contents
