@@ -85,7 +85,7 @@ Then, activate the environment:
     ```bash
     pip install -r requirements.txt
 ***Note: Ensure you install the specific versions listed in requirements.txt to avoid compatibility issues. Alternatively, you can install each dependency manually, matching the specified versions.***
-
+ 
 6. **Start Docker:**
 
     Make sure Docker is running on your system to enable container-based features.
