@@ -19,7 +19,7 @@ MOODSense is an advanced emotion recognition application that combines deep lear
 - [Getting Started](#getting-started)
 - [Additional Information](#Additional-Information)
 
-
+ 
 ---
 
 
